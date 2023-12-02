@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "796498029194",
+    "project_id": "androidapp-c3906",
+    "storage_bucket": "androidapp-c3906.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796498029194:android:24eb24369b198aa8bf9b73",
+        "android_client_info": {
+          "package_name": "com.example.n2tsi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWZg_O5HiZ05h6fHwSYcwERTLEL65r0TM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
