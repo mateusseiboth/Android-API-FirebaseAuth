@@ -17,45 +17,48 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class RecuperaSenha extends AppCompatActivity {
 
-    EditText edRecSenha;
-    Button btRecSenha_;
-    FirebaseAuth mAuthRec;
+    private EditText editTextRecSenha;
+    private Button buttonRecSenha;
+    private FirebaseAuth mAuthRec;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recupera_senha);
 
-        edRecSenha  = findViewById(R.id.editRecSenha);
-        btRecSenha_  = findViewById(R.id.buttonRecSenha);
+        editTextRecSenha = findViewById(R.id.editRecSenha);
+        buttonRecSenha = findViewById(R.id.buttonRecSenha);
 
         mAuthRec = FirebaseAuth.getInstance();
 
-        btRecSenha_.setOnClickListener(new View.OnClickListener() {
+        buttonRecSenha.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email = edRecSenha.getText().toString();
-
-                if(!Patterns.EMAIL_ADDRESS.matcher(email).matches() || email.equals("")){
-                    edRecSenha.setError("Preencha corretamente");
-                    return;
-                }
-
-                //envia e-mail para recuperação de senha
-                mAuthRec.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if(task.isSuccessful()){
-                            Toast.makeText(RecuperaSenha.this, "E-mail enviado.", Toast.LENGTH_LONG).show();
-                            Intent i = new Intent(RecuperaSenha.this, MainActivity.class);
-                            startActivity(i);
-                        }
-                        else
-                            Toast.makeText(RecuperaSenha.this, "Erro.", Toast.LENGTH_LONG).show();
-                    }
-                });
+                recuperaSenha();
             }
         });
+    }
 
+    private void recuperaSenha() {
+        String email = editTextRecSenha.getText().toString();
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() || email.isEmpty()) {
+            editTextRecSenha.setError("Preencha corretamente");
+            return;
+        }
+
+        mAuthRec.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(RecuperaSenha.this, "E-mail enviado. Verifique sua caixa de entrada.", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(RecuperaSenha.this, MainActivity.class);
+                    startActivity(intent);
+                    finish(); // Fechar a atividade para evitar que o usuário retorne
+                } else {
+                    Toast.makeText(RecuperaSenha.this, "Erro ao enviar o e-mail de recuperação. Verifique o endereço de e-mail.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }

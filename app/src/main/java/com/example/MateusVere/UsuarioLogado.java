@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.SearchView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class UsuarioLogado extends AppCompatActivity {
-    TextView textViewFav;
+    Button buttonFav_;
     SearchView searchView;
     RecyclerView recyclerView;
     ArrayList<Foto> fotoArrayList = new ArrayList<>();
@@ -37,7 +38,7 @@ public class UsuarioLogado extends AppCompatActivity {
         setContentView(R.layout.activity_usuario_logado);
 
         recyclerView = findViewById(R.id.recyclerView);
-        textViewFav = findViewById(R.id.textViewFav);
+        buttonFav_ = findViewById(R.id.buttonFav);
         searchView = findViewById(R.id.searchView1);
 
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -80,7 +81,7 @@ public class UsuarioLogado extends AppCompatActivity {
             }
         });
 
-        textViewFav.setOnClickListener(view -> {
+        buttonFav_.setOnClickListener(view -> {
             Intent i = new Intent(UsuarioLogado.this, UsuarioFavoritos.class);
             startActivity(i);
         });
@@ -99,8 +100,8 @@ public class UsuarioLogado extends AppCompatActivity {
         Log.e("URL", buscaCate);
         DownloadDados downloadDados = new DownloadDados();
         downloadDados.run("https://api.pexels.com/v1/" + buscaCate, (url, dados) -> {
-             fotoArrayList.addAll(processarDados(dados));
-             runOnUiThread(() -> recyclerAdapter.notifyDataSetChanged());
+            fotoArrayList.addAll(processarDados(dados));
+            runOnUiThread(() -> recyclerAdapter.notifyDataSetChanged());
 
         });
     }

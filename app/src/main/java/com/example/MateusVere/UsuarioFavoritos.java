@@ -25,15 +25,17 @@ import java.util.ArrayList;
 
 public class UsuarioFavoritos extends AppCompatActivity {
 
-    TextView textViewLogout;
-    SearchView searchView;
-    RecyclerView recyclerView;
-    ArrayList<Foto> fotoArrayListFavoritos = new ArrayList<>();
+    private static final String NODE_PHOTOS = "Fotos";
 
-    RecyclerAdapter recyclerAdapter;
+    private TextView textViewLogout;
+    private SearchView searchView;
+    private RecyclerView recyclerView;
+    private ArrayList<Foto> fotoArrayListFavoritos = new ArrayList<>();
 
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference databaseReference;
+    private RecyclerAdapter recyclerAdapter;
+
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +54,7 @@ public class UsuarioFavoritos extends AppCompatActivity {
         textViewLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FirebaseAuth.getInstance().signOut();
-
-                Toast.makeText(UsuarioFavoritos.this, "Logout", Toast.LENGTH_LONG).show();
-
-                startActivity(new Intent(UsuarioFavoritos.this, MainActivity.class));
+                logoutUser();
             }
         });
 
@@ -66,54 +64,60 @@ public class UsuarioFavoritos extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextSubmit(String s) {
-
-                recyclerAdapter.filtrar(s);
-                recyclerAdapter.notifyDataSetChanged();
+                filterRecyclerView(s);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
-                recyclerAdapter.filtrar(s);
-                recyclerAdapter.notifyDataSetChanged();
+                filterRecyclerView(s);
                 return true;
             }
         });
     }
 
-    private void setInfo() {
-        Query query;
+    private void logoutUser() {
+        FirebaseAuth.getInstance().signOut();
+        Toast.makeText(UsuarioFavoritos.this, "Logout", Toast.LENGTH_LONG).show();
+        startActivity(new Intent(UsuarioFavoritos.this, MainActivity.class));
+    }
 
+    private void setInfo() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        fotoArrayListFavoritos.clear();
-        query = databaseReference.child(user.getUid()).child("Fotos");
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot != null) {
-                    for (DataSnapshot objDataSnapshot1 : dataSnapshot.getChildren()) {
-                        Foto f = objDataSnapshot1.getValue(Foto.class);
-                        fotoArrayListFavoritos.add(f);
+        if (user != null) {
+            DatabaseReference userPhotosRef = databaseReference.child(user.getUid()).child(NODE_PHOTOS);
+            userPhotosRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot != null) {
+                        fotoArrayListFavoritos.clear();
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            Foto f = snapshot.getValue(Foto.class);
+                            fotoArrayListFavoritos.add(f);
+                        }
+                        setRecyclerView();
                     }
-                    setRecyclerView();
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                }
+            });
+        }
     }
 
     private void setRecyclerView() {
-
         recyclerAdapter = new RecyclerAdapter(fotoArrayListFavoritos);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(recyclerAdapter);
+    }
+
+    private void filterRecyclerView(String searchText) {
+        recyclerAdapter.filtrar(searchText);
+        recyclerAdapter.notifyDataSetChanged();
     }
 }

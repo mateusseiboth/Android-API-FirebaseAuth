@@ -18,37 +18,38 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    EditText edEmail, edSenha;
-    TextView tvRecSenha, tvCriaUsuario;
-    Button btLogar;
-    ProgressBar progressBar;
-    FirebaseAuth mAuth;
-    Intent i;
+
+    private static final String EXTRA_EMAIL_RECOVERY = "extra_email_recovery";
+    private static final String EXTRA_EMAIL_CREATE = "extra_email_create";
+
+    private EditText editTextEmail, editTextSenha;
+    private TextView textViewRecSenha, textViewCriaUsuario;
+    private Button buttonLogin;
+    private ProgressBar progressBar;
+    private FirebaseAuth mAuth;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        edEmail = findViewById(R.id.editTextEmail);
-        edSenha = findViewById(R.id.editTextSenha);
-        tvCriaUsuario = findViewById(R.id.textViewCriaUsuario);
-        tvRecSenha = findViewById(R.id.textViewEsqueciSenha);
-        btLogar = findViewById(R.id.buttonLogin);
+        editTextEmail = findViewById(R.id.editTextEmail);
+        editTextSenha = findViewById(R.id.editTextSenha);
+        textViewCriaUsuario = findViewById(R.id.textViewCriaUsuario);
+        textViewRecSenha = findViewById(R.id.textViewEsqueciSenha);
+        buttonLogin = findViewById(R.id.buttonLogin);
         progressBar = findViewById(R.id.progressBar);
 
         mAuth = FirebaseAuth.getInstance();
 
-        tvCriaUsuario.setOnClickListener(this);
-        tvRecSenha.setOnClickListener(this);
-        btLogar.setOnClickListener(this);
+        textViewCriaUsuario.setOnClickListener(this);
+        textViewRecSenha.setOnClickListener(this);
+        buttonLogin.setOnClickListener(this);
 
-        //barra de progresso
+        // Barra de progresso
         progressBar.setVisibility(View.GONE);
-
-
     }
 
     @Override
@@ -58,45 +59,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 logar();
                 break;
             case R.id.textViewEsqueciSenha:
-                i = new Intent(MainActivity.this, RecuperaSenha.class);
-                startActivity(i);
+                intent = new Intent(MainActivity.this, RecuperaSenha.class);
+                intent.putExtra(EXTRA_EMAIL_RECOVERY, editTextEmail.getText().toString());
+                startActivity(intent);
                 break;
             case R.id.textViewCriaUsuario:
-                i = new Intent(MainActivity.this, CriaUsuario.class);
-                startActivity(i);
+                intent = new Intent(MainActivity.this, CriaUsuario.class);
+                intent.putExtra(EXTRA_EMAIL_CREATE, editTextEmail.getText().toString());
+                startActivity(intent);
                 break;
         }
     }
 
     private void logar() {
-        String email = edEmail.getText().toString();
-        String senha = edSenha.getText().toString();
+        String email = editTextEmail.getText().toString();
+        String senha = editTextSenha.getText().toString();
 
-        if (email.equals("") || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            edEmail.setError("Preencha corretamente");
-            edEmail.requestFocus();
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            editTextEmail.setError("Preencha corretamente");
+            editTextEmail.requestFocus();
             return;
         }
 
-        if (senha.equals("")) {
-            edSenha.setError("Preencha corretamente");
-            edSenha.requestFocus();
+        if (senha.isEmpty()) {
+            editTextSenha.setError("Preencha corretamente");
+            editTextSenha.requestFocus();
             return;
         }
 
         progressBar.setVisibility(View.VISIBLE);
-        mAuth.signInWithEmailAndPassword(email, senha).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+        mAuth.signInWithEmailAndPassword(email, senha).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-
-                    i = new Intent(MainActivity.this, UsuarioLogado.class);
-                    startActivity(i);
-
-                } else
-                    Toast.makeText(MainActivity.this, "Erro ao logar", Toast.LENGTH_LONG).show();
-
                 progressBar.setVisibility(View.GONE);
+                if (task.isSuccessful()) {
+                    if (mAuth.getCurrentUser() != null ) {
+                        intent = new Intent(MainActivity.this, UsuarioLogado.class);
+                        startActivity(intent);
+                        finish();
+
+                    } else {
+                        Toast.makeText(MainActivity.this, "Email não verificado", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(MainActivity.this, "Erro ao logar", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
